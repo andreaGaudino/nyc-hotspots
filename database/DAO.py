@@ -51,6 +51,7 @@ class DAO():
         query = """select n1.Location as n1Loc, n2.Location as n2Loc, avg(n1.Latitude) as n1Lat, avg(n1.Longitude) as n1Long, avg(n2.Latitude) as n2Lat, avg(n2.Longitude) as n2Long
                     from `nyc-hotspots`.nyc_wifi_hotspot_locations n1, `nyc-hotspots`.nyc_wifi_hotspot_locations n2
                     where n1.Provider = n2.Provider and n1.Provider = %s 
+                    and n1.Location < n2.Location 
                     group by n1.Location, n2.Location 
                     """
         cursor.execute(query, (provider,))
@@ -59,6 +60,25 @@ class DAO():
             loc1 = Location(row["n1Loc"], row["n1Lat"], row["n1Long"])
             loc2 = Location(row["n2Loc"], row["n2Lat"], row["n2Long"])
             result.append((loc1, loc2))
+        cursor.close()
+        conn.close()
+        return result
+
+    def getNodes2(provider):
+        conn = DBConnect.get_connection()
+
+        result = []
+
+        cursor = conn.cursor(dictionary=True)
+        query = """select n.Location , avg(n.Latitude) as lati, avg(n.Longitude) as longi
+                    from `nyc-hotspots`.nyc_wifi_hotspot_locations n
+                    where n.Provider = %s
+                    group by n.Location 
+                    order by n.Location """
+        cursor.execute(query, (provider,))
+
+        for row in cursor:
+            result.append(Location(row["Location"], row["lati"], row["longi"]))
         cursor.close()
         conn.close()
         return result

@@ -22,7 +22,7 @@ class View(ft.UserControl):
         # title
         # self._title = ft.Text("Hello World", color="blue", size=24)
         self._page.controls.append(ft.Text("NYC Wi-Fi hotspot", color="blue", size=24))
-
+        self.txt_result = ft.ListView()
         #row 1
         self.ddProvider = ft.Dropdown(label="Provider")
         self.btnCreaGrafo = ft.ElevatedButton(text="Crea grafo", on_click=self._controller.handleCreaGrafo)
@@ -51,6 +51,9 @@ class View(ft.UserControl):
         self.ddTarget = ft.Dropdown(label='Target')
         row4 = ft.Row([ft.Container(self.ddTarget, width=300), ft.Container(None, width=200)], alignment=ft.MainAxisAlignment.CENTER)
         self._page.controls.append(row4)
+        self._page.controls.append(self.txt_result)
+
+        self._controller.fillDDTarget()
 
         self.update_page()
 
