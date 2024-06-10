@@ -28,6 +28,7 @@ class View(ft.UserControl):
         self.btnCreaGrafo = ft.ElevatedButton(text="Crea grafo", on_click=self._controller.handleCreaGrafo)
         row1 = ft.Row([ft.Container(self.ddProvider, width=300), ft.Container(self.btnCreaGrafo, width=200)], alignment=ft.MainAxisAlignment.CENTER)
         self._page.controls.append(row1)
+        self._controller.fillDDProvider()
 
         #row 2
         self.txtInDistanza = ft.TextField(label="Distanza")

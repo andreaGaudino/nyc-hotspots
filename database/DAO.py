@@ -1,4 +1,5 @@
 from database.DB_connect import DBConnect
+from model.location import Location
 
 
 class DAO():
@@ -12,15 +13,52 @@ class DAO():
         result = []
 
         cursor = conn.cursor(dictionary=True)
-        query = """select a.* , sum(t.Milliseconds) as totD
-                        from album a , track t 
-                        where a.AlbumId = t.AlbumId 
-                        group by a.AlbumId 
-                        having totD > %s """
-        cursor.execute(query, (d,))
+        query = """select distinct Provider
+                    from nyc_wifi_hotspot_locations"""
+        cursor.execute(query, ())
 
         for row in cursor:
-            result.append(Album(**row))
+            result.append(row["Provider"])
+        cursor.close()
+        conn.close()
+        return result
+
+    @staticmethod
+    def getLocationsOfProvider(provider):
+        conn = DBConnect.get_connection()
+
+        result = []
+
+        cursor = conn.cursor(dictionary=True)
+        query = """select distinct Location
+                    from nyc_wifi_hotspot_locations
+                    where Provider = %s"""
+        cursor.execute(query, (provider,))
+
+        for row in cursor:
+            result.append(row["Location"])
+        cursor.close()
+        conn.close()
+        return result
+
+    @staticmethod
+    def getAllEdges(provider):
+        conn = DBConnect.get_connection()
+
+        result = []
+
+        cursor = conn.cursor(dictionary=True)
+        query = """select n1.Location as n1Loc, n2.Location as n2Loc, avg(n1.Latitude) as n1Lat, avg(n1.Longitude) as n1Long, avg(n2.Latitude) as n2Lat, avg(n2.Longitude) as n2Long
+                    from `nyc-hotspots`.nyc_wifi_hotspot_locations n1, `nyc-hotspots`.nyc_wifi_hotspot_locations n2
+                    where n1.Provider = n2.Provider and n1.Provider = %s 
+                    group by n1.Location, n2.Location 
+                    """
+        cursor.execute(query, (provider,))
+
+        for row in cursor:
+            loc1 = Location(row["n1Loc"], row["n1Lat"], row["n1Long"])
+            loc2 = Location(row["n2Loc"], row["n2Lat"], row["n2Long"])
+            result.append((loc1, loc2))
         cursor.close()
         conn.close()
         return result
